@@ -1,4 +1,4 @@
-const Bookmark = require("../models/bookmark");
+const {Bookmark} = require("../models/index");
 
 exports.toggleBookmark = async (req, res) => {
   const { post_id, user_id } = req.body;

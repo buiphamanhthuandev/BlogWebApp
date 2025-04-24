@@ -1,5 +1,4 @@
-// const Post = require("../models/post");
-// const Category = require("../models/category");
+
 const {Post, Category} = require("../models/index");
 exports.getAllPosts = async (req, res) => {
   try {

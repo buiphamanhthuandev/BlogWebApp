@@ -1,4 +1,4 @@
-const PostCategory = require('../models/post-category');
+const {PostCategory} = require('../models/index');
 
 exports.addPostCategory = async (req, res) => {
   const { post_id, category_id } = req.body;

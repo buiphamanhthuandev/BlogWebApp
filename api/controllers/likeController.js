@@ -1,4 +1,4 @@
-const Like = require("../models/like");
+const {Like} = require("../models/index");
 
 exports.toggleLike = async (req, res) => {
   const { post_id, user_id } = req.body;
