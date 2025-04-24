@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const User = require("../models/user");
 exports.getAllUsers = (req, res) => {
     User.findAll()
@@ -16,7 +17,6 @@ exports.getUser = async (req, res) => {
                 message: 'user not found'
             });
         }
-
         res.status(201).json({
             user
         })
@@ -26,22 +26,23 @@ exports.getUser = async (req, res) => {
             error
         });
     }
-    
 }
 
 exports.createUser = async (req, res) => {
-    const {first_name, last_name, email} = req.body;
+    const {username, email, password, role} = req.body;
     
-    if(!first_name || !last_name || !email){
+    if(!username || !email || !password || !role){
         return res.status(400).send({
-            message: "First name, last name, and email cannot be empty!"
+            message: "username, email, password and role cannot be empty!"
         });
     }
     try{
+        const hashedPassword = await bcrypt.hash(password, 10); 
         const newUser = await User.create({
-            first_name,
-            last_name,
-            email
+            username,
+            email,
+            password : hashedPassword,
+            role
         });
         res.status(201).json({
             message: 'User registered successfully',
@@ -56,8 +57,7 @@ exports.createUser = async (req, res) => {
 }
 exports.updateUser = async (req, res) => {
     const id = parseInt(req.params.id);
-    const {first_name, last_name, email} = req.body;
-
+    const {username, email, password, role} = req.body;
     try{
         const user = await User.findByPk(id);
         
@@ -66,9 +66,11 @@ exports.updateUser = async (req, res) => {
                 message: "user not found"
             });
         }else{
-            user.first_name = first_name;
-            user.last_name = last_name;
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user.username = username;
             user.email = email;
+            user.password = hashedPassword;
+            user.role = role;
             await user.save();
 
             res.status(201).json({
