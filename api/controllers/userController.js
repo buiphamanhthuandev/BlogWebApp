@@ -1,9 +1,30 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
-exports.getAllUsers = (req, res) => {
-    User.findAll()
-    .then(users => res.json(users))
-    .catch(error => res.status(500).json({message: 'Internal server error', error: error}));
+exports.getAllUsers = async (req, res) => {
+    try{
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
+        const offset = (page - 1) * limit;
+
+        const totalUsers = await User.count();
+        const users = await User.findAll({
+            limit,
+            offset,
+            order: [['created_at', order]]
+        });
+        res.status(200).json({
+            currentPage: page,
+            totalPages: Math.ceil(totalUsers / limit),
+            totalUsers,
+            users
+        });
+    }catch(error){
+        res.status(500).json({
+            message: "Internal server error", 
+            error: error.message
+        });
+    }
 }
 
 exports.getUser = async (req, res) => {
@@ -23,7 +44,7 @@ exports.getUser = async (req, res) => {
     }catch(error){
         res.status(500).json({
             message: 'Internal server error',
-            error
+            error: error.message
         });
     }
 }
@@ -50,7 +71,8 @@ exports.createUser = async (req, res) => {
         });
     }catch(error){
         res.status(500).json({
-            message: 'An error occurred while registering the user'
+            message: 'An error occurred while registering the user',
+            error: error.message
         });
     }
     
@@ -81,7 +103,7 @@ exports.updateUser = async (req, res) => {
     }catch(error){
         res.status(500).json({
             message: 'Internal server error',
-            error
+            error: error.message
         });
     }  
 }
@@ -105,7 +127,7 @@ exports.deleteUser = async (req, res) => {
     }catch(error){
         res.status(500).json({
             message: 'Internal server error',
-            error
+            error: error.message
         });
     }  
 }

@@ -15,7 +15,9 @@ const Post = sequelize.define("Post", {
     allowNull: false
   }
 }, {
-  timestamps: false,
+  timestamps: true,
+  createdAt: "created_at",
+  updatedAt: "updated_at",
   tableName: "posts"
 });
 

@@ -2,10 +2,26 @@ const Category = require("../models/category");
 
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.findAll();
-    res.status(200).json(categories);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
+    const offset = (page - 1) * limit;
+
+    const totalCategories = await Category.count();
+
+    const categories = await Category.findAll({
+      limit,
+      offset,
+      order: [["created_at", order]]
+    });
+    res.status(200).json({
+      currentPage: page,
+      totalPages: Math.ceil(totalCategories / limit),
+      totalCategories,
+      categories
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error });
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
 
@@ -16,7 +32,7 @@ exports.getCategory = async (req, res) => {
     if (!category) return res.status(404).json({ message: 'Category not found' });
     res.status(200).json({ category });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error });
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
 
@@ -27,7 +43,7 @@ exports.createCategory = async (req, res) => {
     const newCategory = await Category.create({ name });
     res.status(201).json({ message: 'Category created', newCategory });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating category', error });
+    res.status(500).json({ message: 'Error creating category', error: error.messager });
   }
 };
 
@@ -39,7 +55,7 @@ exports.updateCategory = async (req, res) => {
     await category.update(req.body);
     res.status(200).json({ message: 'Category updated', category });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error });
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
 
@@ -51,6 +67,6 @@ exports.deleteCategory = async (req, res) => {
     await category.destroy();
     res.status(200).json({ message: 'Category deleted' });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error });
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };

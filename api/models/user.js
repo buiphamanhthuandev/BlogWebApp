@@ -33,10 +33,31 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: "user"
+    },
+    refresh_token:{
+        type: DataTypes.STRING,
+        allowNull: true
     }
     },{
-        timestamps: false,
-        tableName: "users"
+        timestamps: true,
+        createdAt: "created_at",
+        updatedAt: "updated_at",
+        tableName: "users",
+
+        defaultScope: {
+            attributes: {
+                exclude: [
+                    "password",
+                    "refresh_token",
+                    "verification_token",
+                ]
+            }
+        },
+        scopes: {
+            withAllData:{
+                attributes: {}
+            }
+        }
     }
 );
 module.exports = User;

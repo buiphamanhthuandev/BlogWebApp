@@ -2,7 +2,17 @@
 const {Post, Category} = require("../models/index");
 exports.getAllPosts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
+    const offset = (page - 1) * limit;
+
+    const totalPosts = await Post.count();
+
     const posts = await Post.findAll({
+      limit,
+      offset,
+      order: [['created_at', order]],
       include: [
         {
           model: Category,
@@ -11,9 +21,14 @@ exports.getAllPosts = async (req, res) => {
       ]
     });
     
-    res.status(200).json(posts);
+    res.status(200).json({
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit),
+      totalPosts,
+      posts
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error });
+    res.status(500).json({ message: "Internal server error",error: error.message });
   }
 };
 
@@ -49,7 +64,7 @@ exports.createPost = async (req, res) => {
 
     res.status(201).json({ message: "Post created", newPost });
   } catch (error) {
-    res.status(500).json({ message: "Error creating post", error });
+    res.status(500).json({ message: "Error creating post", error: error.message });
   }
 };
 
@@ -74,7 +89,7 @@ exports.updatePost = async (req, res) => {
 
     res.status(200).json({ message: "Post updated", post });
   } catch (error) {
-    res.status(500).json({ message: "Error updating post", error });
+    res.status(500).json({ message: "Error updating post", error: error.message});
   }
 };
 
@@ -86,6 +101,6 @@ exports.deletePost = async (req, res) => {
     await post.destroy();
     res.status(200).json({ message: "Post deleted" });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };

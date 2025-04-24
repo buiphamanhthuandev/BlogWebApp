@@ -6,9 +6,11 @@ const Comment = sequelize.define("Comment", {
   content: {
     type: DataTypes.TEXT,
     allowNull: false
-  }
+  },
 }, {
-  timestamps: false,
+  timestamps: true,
+  createdAt: "created_at",
+  updatedAt: false,
   tableName: "comments"
 });
 
