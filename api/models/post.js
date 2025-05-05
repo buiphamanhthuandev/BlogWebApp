@@ -13,6 +13,14 @@ const Post = sequelize.define("Post", {
   content: {
     type: DataTypes.TEXT,
     allowNull: false
+  },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  view: {
+    type: DataTypes.INTEGER,
+    allowNull: true
   }
 }, {
   timestamps: true,

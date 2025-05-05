@@ -1,10 +1,11 @@
+const { Json } = require("sequelize/lib/utils");
 const Category = require("../models/category");
 
 exports.getAllCategories = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
+    const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
     const offset = (page - 1) * limit;
 
     const totalCategories = await Category.count();
@@ -14,12 +15,18 @@ exports.getAllCategories = async (req, res) => {
       offset,
       order: [["created_at", order]]
     });
-    res.status(200).json({
+    const totalPages = Math.ceil(totalCategories / limit);
+    const pagination = {
       currentPage: page,
-      totalPages: Math.ceil(totalCategories / limit),
       totalCategories,
-      categories
-    });
+      totalPages: totalPages,
+      limit,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < totalPages
+    }
+
+    res.set('X-Pagination', JSON.stringify(pagination));
+    res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }

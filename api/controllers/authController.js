@@ -42,6 +42,7 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET, 
       { algorithm: 'HS256', expiresIn: '1h' }
     );
+    console.log("role in token:", user.role); 
     const refreshToken = jwt.sign(
       {id: user.id},
       process.env.JWT_REFRESH_SECRET,
@@ -49,22 +50,29 @@ exports.login = async (req, res) => {
     )
     user.refresh_token = refreshToken;
     await user.save();
-    res.status(201).json({ message: "Login successful", accesstoken, refreshToken });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.status(201).json({ message: "Login successful", accesstoken});
   } catch (error) {
     res.status(500).json({ message: "Login failed", error: error.message });
   }
 };
 
 exports.refreshToken = async (req, res) => {
-  const { refreshtoken } = req.body;
+  const refreshtoken  = req.cookies.refreshToken;
   if(!refreshtoken){
     return res.status(401).json({
       message: "No refresh token provided"
     });
   }
   try{
-    const decoded  = jwt.verify(refreshtoken, process.env.JWT_REFRESH_SECRET);
-    const user = await User.scope('withAllData').findByPk(decoded.id);
+    const payload  = jwt.verify(refreshtoken, process.env.JWT_REFRESH_SECRET);
+    const user = await User.scope('withAllData').findByPk(payload.id);
     if(!user || user.refresh_token !== refreshtoken){
       return res.status(403).json({
         message: "Invalid refresh token" 
@@ -99,6 +107,12 @@ exports.logout = async (req, res) => {
     if(user){
       await user.update({ refresh_token : null});
     }
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Strict'
+    })
+
     res.status(200).json({
       message: "Logout successfully"
     });
