@@ -7,20 +7,25 @@ exports.register = async (req, res) => {
   const { username, email, password } = req.body;
   if(!username, !email, !password){
     return res.status(400).json({
-      message: "Missing username, email or password"
+      message: "Lỗi tên đăng nhập, email hoặc mật khẩu!"
     });
   }
-  try {
-    const existingUser = await User.scope('withAllData').findOne({where: {email}});
-    if(existingUser){
+  const existingEmail = await User.scope('withAllData').findOne({where: {email}});
+    if(existingEmail){
       return res.status(409).json({
-        message: "Email already in use"
+        message: "Email đã tồn tại!"
       });
     }
-
+    const existingUserName = await User.scope('withAllData').findOne({where: {username}});
+    if(existingUserName){
+      return res.status(409).json({
+        message: "Tên đăng nhập đã tồn tại!"
+      });
+    }
+  try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ username, email, password: hashedPassword, role: "user"});
-    res.status(201).json({ message: "User registered successfully", user });
+    res.status(201).json({ message: "Tạo tài khoản thành công", user });
   } catch (err) {
     res.status(500).json({ message: "Registration failed", error: err.message });
   }
@@ -30,12 +35,10 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.scope('withAllData').findOne({ where: { email } });
-    if (!user) return res.status(401).json({ message: "User not found" });
+    if (!user) return res.status(400).json({ message: "Email không đúng, vui lòng nhập lại!" });
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ message: "Invalid password" });
-    
-
+    if (!valid) return res.status(400).json({ message: "Mật khẩu không đúng, vui lòng nhập lại!" });
 
     const accesstoken = jwt.sign(
       { id: user.id, email: user.email,  role: user.role }, 
@@ -57,7 +60,7 @@ exports.login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.status(201).json({ message: "Login successful", accesstoken});
+    res.status(200).json({ message: "Login successful", accesstoken});
   } catch (error) {
     res.status(500).json({ message: "Login failed", error: error.message });
   }

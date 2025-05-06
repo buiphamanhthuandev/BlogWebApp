@@ -53,13 +53,13 @@ export default function Header() {
               </Link>
             </div>
             <div>
-              <Link to={'/'}
+              <Link to={'/login'}
                 className="hover:text-gray-200 hover:underline px-4">
                 Đăng nhập
               </Link>
             </div>
             <div>
-              <Link to={'/'}
+              <Link to={'/register'}
                className="hover:text-gray-200 hover:underline px-4">
                 Đăng ký
               </Link>

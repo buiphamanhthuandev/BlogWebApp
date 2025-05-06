@@ -19,7 +19,7 @@ export default function About() {
         <div className="md:w-1/2 flex justify-center mb-6 md:mb-0">
           <img
             src="http://localhost:5000/uploads/a52592f9-0b13-4388-9cb1-961ed3df3ebc.jpg"
-            alt="Profile Picture"
+            alt="Profile"
             className="w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-indigo-500 object-cover"
           />
         </div>
