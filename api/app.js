@@ -21,17 +21,7 @@ app.use(cors({
     exposedHeaders: ['x-pagination'], 
     credentials: true
 }));
-app.use((err, req, res, next) => {
-    if (err instanceof multer.MulterError) {
-      // lỗi multer như giới hạn kích thước file
-      return res.status(400).json({ message: err.message });
-    } else if (err) {
-      // các lỗi khác, như định dạng file sai
-      return res.status(400).json({ message: err.message });
-    }
-    next();
-  });
-  
+
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use('/api/auth', authRoutes);

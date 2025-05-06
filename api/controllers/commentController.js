@@ -1,4 +1,4 @@
-const {Comment} = require("../models/index");
+const {Comment, Post, User} = require("../models/index");
 
 exports.getAllComments = async (req, res) => {
   try {
@@ -12,7 +12,17 @@ exports.getAllComments = async (req, res) => {
     const comments = await Comment.findAll({
       limit,
       offset,
-      order: [['created_at', order]]
+      order: [['created_at', order]],
+      include: [
+        {
+          model: Post,
+          attributes: ['id', 'title']
+        },
+        {
+          model: User,
+          attributes: ['id', 'username', 'email']
+        }
+      ]
     });
     const totalPages = Math.ceil(totalComments / limit);
     const pagination = {
@@ -43,22 +53,36 @@ exports.getByIdPostInComment = async(req, res) => {
       where: {post_id: id}, 
       limit, 
       offset, 
-      order: [['created_at', order]]
+      order: [['created_at', order]],
+      include: [
+        {
+          model: Post,
+          attributes: ['id', 'title']
+        },
+        {
+          model: User,
+          attributes: ['id', 'username', 'avatar']
+        }
+      ]
     });
-    res.status(200).json({
-      message: "List comments for id Post", 
+    const totalPages = Math.ceil(totalComments / limit);
+    const pagination = {
       currentPage: page,
       totalComments,
-      totalPages: Math.ceil(totalComments / limit),
-      comments
-    });
+      totalPages: totalPages,
+      limit,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < totalPages,
+    }
+    res.set('x-pagination', JSON.stringify(pagination));
+    res.status(200).json(comments);
   } catch (error) {
-    res.status(500).json({message: 'Internal server error', error});
+    res.status(500).json({message: 'Internal server error', error: error.message});
   }
 };
 exports.createComment = async (req, res) => {
   const { content, post_id } = req.body;
-  if (!content || !post_id || !user_id) return res.status(400).json({ message: 'All fields required' });
+  if (!content || !post_id) return res.status(400).json({ message: 'All fields required' });
   try {
     const newComment = await Comment.create({ content, post_id, user_id: req.user.id, });
     res.status(201).json({ message: 'Comment created', newComment });

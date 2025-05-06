@@ -1,5 +1,5 @@
 require('dotenv').config();
-const {Post, Category} = require("../models/index");
+const {Post, Category, Comment} = require("../models/index");
 exports.getAllPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -56,7 +56,7 @@ exports.getPost = async (req, res) => {
 
 exports.createPost = async (req, res) => {
   const { title, content, category_ids = [] } = req.body;
-  if (!title || !content || !user_id) {
+  if (!title || !content) {
     return res.status(400).json({ message: "Missing required fields" });
   }
   const imageUrl = req.file ? `${process.env.APPURL}/uploads/${req.file.filename}` : 'https://loremflickr.com/800/600/city'
@@ -76,7 +76,7 @@ exports.createPost = async (req, res) => {
 exports.updatePost = async (req, res) => {
   const id = parseInt(req.params.id);
   const { title, content, category_ids } = req.body;
-  if (!title || !content || !user_id) {
+  if (!title || !content) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
@@ -110,3 +110,24 @@ exports.deletePost = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
+exports.getTopViewPost = async (req, res) => {
+  try {
+    const posts = await Post.findAll({
+      limit: 5,
+      order: [['view', 'DESC']],
+      include: [
+        {
+          model: Category,
+          through: { attributes: [] }
+        }
+      ],
+    });
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+}
