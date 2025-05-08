@@ -1,15 +1,26 @@
 require('dotenv').config();
-const {Post, Category, Comment} = require("../models/index");
+const slugify = require('slugify');
+const {v4: uuidv4} = require('uuid');
+const { Op } = require('sequelize');
+const {Post, Category} = require("../models/index");
 exports.getAllPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
     const offset = (page - 1) * limit;
+    const search = req.query.search || '';
+    console.log('test search: ', search);
+    const whereClause = search
+  ? { title: { [Op.like]: `%${search}%` } }
+  : {};
 
-    const totalPosts = await Post.count();
+    const totalPosts = await Post.count({
+      where: whereClause
+    });
 
     const posts = await Post.findAll({
+      where: whereClause,
       limit,
       offset,
       order: [['created_at', order]],
@@ -20,6 +31,59 @@ exports.getAllPosts = async (req, res) => {
         }
       ]
     });
+    if(!posts){
+      return res.status(404).json({message: "Post not found"});
+    }
+    const totalPages = Math.ceil(totalPosts / limit);
+    const pagination = {
+      currentPage: page,
+      totalPosts,
+      totalPages: totalPages,
+      limit,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < totalPages,
+    }
+    res.set('x-pagination', JSON.stringify(pagination));
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error",error: error.message });
+  }
+};
+
+exports.getPostsByCategory = async (req, res) => {
+  try {
+    const categoryId = req.params.categoryid;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
+    const offset = (page - 1) * limit;
+
+
+    console.log('test categoryid: ',categoryId);
+    const totalPosts = await Post.count({
+      include: [
+        {
+          model: Category,
+          where: { id: categoryId}
+        }
+      ]
+    });
+
+    const posts = await Post.findAll({
+      limit,
+      offset,
+      order: [['created_at', order]],
+      include: [
+        {
+          model: Category,
+          where: {id: categoryId},
+          through: { attributes: [] }
+        }
+      ]
+    });
+    if(!posts){
+      return res.status(404).json({message: "Post not found"});
+    }
     const totalPages = Math.ceil(totalPosts / limit);
     const pagination = {
       currentPage: page,
@@ -61,7 +125,11 @@ exports.createPost = async (req, res) => {
   }
   const imageUrl = req.file ? `${process.env.APPURL}/uploads/${req.file.filename}` : 'https://loremflickr.com/800/600/city'
   try {
-    const newPost = await Post.create({ title, content, user_id: req.user.id, image: imageUrl });
+    const baseSlug = slugify(title, {lower: true, strict: true});
+    const shortId = uuidv4().split('-')[0];
+    const slug = `${baseSlug}-${shortId}`;
+
+    const newPost = await Post.create({ title, content, user_id: req.user.id, image: imageUrl, slug });
 
     if (category_ids.length > 0) {
       await newPost.setCategories(category_ids);

@@ -6,9 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginValidate } from "../../libs/validates/FormValidate";
 import Swal from "sweetalert2";
 import { Link, useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 export default function Login() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const { refetchUser } = useAuth();
   const mutationLogin = useMutation({
     mutationKey: ["login"],
     mutationFn: async (data) => {
@@ -26,6 +28,7 @@ export default function Login() {
         }
       } else if (data?.status === 200) {
         localStorage.setItem("token", data.data?.accesstoken);
+        await refetchUser();
         const result = await Swal.fire({
           title: "Đăng nhập thành công!",
           icon: "success",

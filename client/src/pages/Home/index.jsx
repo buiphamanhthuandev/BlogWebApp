@@ -1,34 +1,59 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Pagination from "../../components/Pagination/Pagination";
 import SidebarSection from '../../components/SidebarSection/SidebarSection';
 import { useQuery } from "@tanstack/react-query";
-import { GetAllPosts } from "../../services/api/PostService";
+import { GetAllPosts, GetPostsByCategory } from "../../services/api/PostService";
 import { format} from "date-fns";
-import { Link } from "react-router";
+import { Link, useLocation, useParams } from "react-router";
 import { ClipLoader } from "react-spinners";
 export default function Home() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const search = searchParams.get('search' || '');
+
+  console.log('test search : ',search);
+
+  const { categoryid } = useParams();
   const [page, setPage] = useState(null);
-  const [paramPage, setParamPage] = useState({ page: 1, limit: 5});
+  const [paramPage, setParamPage] = useState({ page: 1, limit: 5, search: search});
 
   const {data: HomePostQuery, isLoading } = useQuery({
     queryKey: [
       "HomePost",
       paramPage.page,
       paramPage.limit,
+      categoryid,
+      search
     ],
     queryFn: async () => {
-      const result = await GetAllPosts({ params: paramPage});
-      // Debug log để xem response và headers
-      console.log("response service:", result);
-      if (result.headers && result.headers["x-pagination"]) {
-        const paginationData = JSON.parse(result.headers["x-pagination"]);
-        setPage(paginationData);
-        console.log("Pagination Data: ", paginationData);
+      if(!categoryid){
+        const result = await GetAllPosts({ params: paramPage});
+        if (result.headers && result.headers["x-pagination"]) {
+          const paginationData = JSON.parse(result.headers["x-pagination"]);
+          setPage(paginationData);
+        }
+  
+        return result.data;
+      }else{
+        const result = await GetPostsByCategory(categoryid,{ params: paramPage});
+        if (result.headers && result.headers["x-pagination"]) {
+          const paginationData = JSON.parse(result.headers["x-pagination"]);
+          setPage(paginationData);
+        }
+  
+        return result.data;
       }
-
-      return result.data;
+      
     }
   })
+  useEffect(() => {
+    setParamPage((prev) => ({
+      ...prev, 
+      page: 1,
+      search: search
+    }));
+  }, [search]);
+
   const HandlePreOrNext = (check) => {
     console.log("check: ", check);
     if(check === true){
@@ -74,7 +99,7 @@ export default function Home() {
                     {item.content.split(' ').slice(0,63).join(' ')}...
                   </p>
                   <Link to={`/detail/${item.id}`}  className="w-full bg-blue-800 text-white font-bold text-sm uppercase rounded hover:bg-blue-700 flex items-center justify-center px-2 py-3 mt-4">
-                    Continue Reading <i class="fas fa-arrow-right"></i>
+                    Continue Reading <i className="fas fa-arrow-right"></i>
                   </Link>
                 </div>
               </article>

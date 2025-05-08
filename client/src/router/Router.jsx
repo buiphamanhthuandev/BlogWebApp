@@ -8,10 +8,17 @@ import Register from "../pages/Register";
 
 export const Router = [
     {path: "/", name: "Home", element: <Home />},
+    {path: "/category/:categoryid", name: "Category", element: <Home />},
     {path: "/detail/:id", name: "Detail", element: <Detail />},
     {path: "/about", name: "About", element: <About />},
     {path: "/contact", name: "Contact", element: <Contact />},
     {path: "/account", name: "Account", element: <Account />},
-    {path: "/login", name: "Login", element: <Login />},
-    {path: "/register", name: "Register", element: <Register />}
 ];
+
+export const RouteLogin = {
+    path: "/login", name: "Login", element: <Login />
+}
+
+export const RouteRegister = {
+    path: "/register", name: "Register", element: <Register />
+}

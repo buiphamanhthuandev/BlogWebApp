@@ -1,12 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import React from 'react'
-import { GetByPostIdComments } from '../../../services/api/CommentService';
+import { CreateComment, GetByPostIdComments } from '../../../services/api/CommentService';
 import { ClipLoader } from 'react-spinners';
 import { format } from 'date-fns';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CommentValidate } from '../../../libs/validates/FormValidate';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router';
 
 export default function CommentComponent(props) {
   const id = props.id;
-  
+  const navigate = useNavigate();
   const {data, isLoading} = useQuery({
     queryKey: [
         "CommentComponent",
@@ -14,43 +19,92 @@ export default function CommentComponent(props) {
     ],
     queryFn: async () => {
         const result = await GetByPostIdComments(id, {params: {page : 1, limit: 10}});
-        console.log("Comment query", result);
         return result.data;
     }
   });
+
+  const mutationCreateComment = useMutation({
+    mutationKey: ["CreateComment"],
+    mutationFn: async (data) => {
+      return await CreateComment(data);
+    },
+    onSuccess: async (data) => {
+      if(data?.status === 201){
+        await Swal.fire({
+          title: "Bình luận thành công",
+          icon: "success"
+        })
+      }
+      else if(data?.status === 401){
+        await Swal.fire({
+          title: "Bình luận được khi đã đăng nhập",
+          icon: "warning"
+        });
+        navigate("/login");
+      }else if(data?.status === 500){
+        await Swal.fire({
+          title: "Hệ thống đang bảo trì",
+          icon: "error"
+        });
+      }
+      resetComment();
+    }
+  });
+
+  const {
+    register: CommentRegister,
+    handleSubmit: handleComment,
+    reset: resetComment,
+    formState: { errors: CommentErrors},
+  } = useForm({
+    defaultValues: {
+      post_id : id,
+      content: "",
+    },
+    resolver: zodResolver(CommentValidate)
+  });
+
+  async function formActionComment(data) {
+    const parseData = await CommentValidate.safeParseAsync(data);
+    if (parseData.error){
+      return;
+    }
+    await mutationCreateComment.mutateAsync(data);
+  }
+
   return (
-    <section class="py-8 shadow bg-white w-[700px] mx-auto">
-    <div class="container mx-auto px-4">
-      <h2 class="text-2xl font-bold mb-4">Bình luận</h2>
+    <section className="py-8 shadow bg-white w-[700px] mx-auto">
+    <div className="container mx-auto px-4">
+      <h2 className="text-2xl font-bold mb-4">Bình luận</h2>
       {
         !isLoading ? (
-          <div class="space-y-4">
+          <div className="space-y-4">
           {
               data && data.length > 0 ? (
                   data.map((item, key) => {
                       return (
-                          <div key={item.id} class="bg-white p-4 rounded-lg shadow w-[650px]">
-                          <div class="flex items-center mb-2">
+                          <div key={item.id} className="bg-white p-4 rounded-lg shadow w-[650px]">
+                          <div className="flex items-center mb-2">
                             <img
                               src={item.User?.avatar}
                               alt="User Avatar"
-                              class="w-10 h-10 rounded-full mr-3"
+                              className="w-10 h-10 rounded-full mr-3"
                             />
                             <div>
-                              <h3 class="font-semibold">{item.User?.username}</h3>
-                              <p class="text-sm text-gray-500">
+                              <h3 className="font-semibold">{item.User?.username}</h3>
+                              <p className="text-sm text-gray-500">
                                 { format(new Date(item.created_at), 'dd/MM/yyyy HH:mm')}
                               </p>
                             </div>
                           </div>  
-                          <p class="text-gray-700">
+                          <p className="text-gray-700">
                             {item.content}
                           </p>
-                          <div class="flex items-center mt-2">
-                            <button class="text-blue-500 hover:text-blue-600 mr-2">
+                          <div className="flex items-center mt-2">
+                            <button className="text-blue-500 hover:text-blue-600 mr-2">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5 inline"
+                                className="h-5 w-5 inline"
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
                               >
@@ -58,7 +112,7 @@ export default function CommentComponent(props) {
                               </svg>
                               Like
                             </button>
-                            <button class="text-gray-500 hover:text-gray-600">
+                            <button className="text-gray-500 hover:text-gray-600">
                               Reply
                             </button>
                           </div>
@@ -78,25 +132,46 @@ export default function CommentComponent(props) {
       }
 
 
-      <form class="mt-8 bg-white p-4 rounded-lg shadow">
-        <div class="mb-4">
+      <form 
+        method='post'
+        onSubmit={handleComment(formActionComment)}
+       className="mt-8 bg-white p-4 rounded-lg shadow">
+        <div className="mb-4">
           <label
-            for="comment"
-            class="block text-gray-700 font-medium mb-2"
+            htmlFor="comment"
+            className="block text-gray-700 font-medium mb-2"
           >
             Bình luận
           </label>
+          <input 
+            type="test"
+            id='post_id'
+            name='post_id'
+            {...CommentRegister("post_id")}
+            defaultValue={id}
+            />
+            {CommentErrors?.post_id && (
+            <p className="text-red-500 text-sm mt-1">
+              {CommentErrors?.post_id.message}
+            </p>
+          )}
           <textarea
-            id="comment"
-            name="comment"
+            id="content"
+            name="content"
+            {...CommentRegister("content")}
+            
             rows="4"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           ></textarea>
+          {CommentErrors?.content && (
+            <p className="text-red-500 text-sm mt-1">
+              {CommentErrors?.content.message}
+            </p>
+          )}
         </div>
         <button
           type="submit"
-          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Gửi
         </button>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { refreshToken } from '../../services/api/TokenService';
 
 const BASE_URL = "http://localhost:5000/api";
 export const authAxios = axios.create({
@@ -11,9 +12,9 @@ export const authAxios = axios.create({
 
 authAxios.interceptors.request.use(
     async (config) => {
-        const result = localStorage.getItem("token");
-        if(result?.token){
-            config.headers.Authorization = `Bearer ${result?.token}`;
+        const token = localStorage.getItem("token");
+        if(token){
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
@@ -24,21 +25,20 @@ authAxios.interceptors.request.use(
 authAxios.interceptors.response.use(
     (response) => response,
     async (error) => {
-        console.log(error.response);
-        // if(error.response && error.response?.status === 401){
-        //     try{
-        //         const refresh = await refreshToken();
-        //         if(!refresh.token){
-        //             return Promise.reject(error);
-        //         }
-        //         localStorage.setItem('token', refresh?.token);
-        //         const config = error.config;
-        //         config.headers.Authorization = `Bearer ${refresh.token}`;
-        //         return authAxios.request(config);
-        //     }catch(error){
-        //         return Promise.reject(error);
-        //     }
-        // }
+        if(error.response && error.response?.status === 401){
+            try{
+                const refresh = await refreshToken();
+                if(!refresh.token){
+                    return Promise.reject(error);
+                }
+                localStorage.setItem('token', refresh?.token);
+                const config = error.config;
+                config.headers.Authorization = `Bearer ${refresh.token}`;
+                return authAxios.request(config);
+            }catch(error){
+                return Promise.reject(error);
+            }
+        }
     }
 );
 
@@ -53,7 +53,6 @@ export const publicAxios = axios.create({
 publicAxios.interceptors.response.use(
     (response) => response,
     (error) => {
-        console.log(error.message);
         return Promise.reject(error);
     }
 )

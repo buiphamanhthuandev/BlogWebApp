@@ -90,6 +90,7 @@ exports.createComment = async (req, res) => {
     res.status(500).json({ message: 'Error creating comment', error });
   }
 };
+
 exports.deleteComment = async (req, res) => {
   const id = parseInt(req.params.id);
   if(id < 1){

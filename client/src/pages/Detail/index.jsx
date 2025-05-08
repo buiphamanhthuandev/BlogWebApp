@@ -13,7 +13,6 @@ export default function Detail() {
     queryKey: ["Deatail", id],
     queryFn: async () => {
       const result = await GetPost(id);
-      console.log("page detail post: ", result);
       return result.data;
     },
   });
@@ -41,7 +40,7 @@ export default function Detail() {
                     data.Categories && data.Categories.map((item, key) => {
                       return (
                         <Link
-                          to={`/category/$${item.id}`}
+                          to={`/category/${item.id}`}
                           key={item.id}
                           className="text-blue-700 text-sm font-bold uppercase pb-4 mr-2"
                         >

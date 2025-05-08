@@ -3,16 +3,15 @@ import { publicAxios } from '../../libs/config/AxiosConfig';
 const END_POINT = {
     GetAllPosts : '/post',
     GetTopViewPosts : '/post/topview',
-    GetPost: '/post'
+    GetPost: '/post',
+    GetPostsByCategory: '/post/category'
 }
 
 export const GetAllPosts = async (paramPost) => {
     try{
         const response = await publicAxios.get(`${END_POINT.GetAllPosts}`,paramPost);
-        console.log("response service", response);
         return response;
     }catch(error){
-        console.log("error getpost: ", error);
         return await error;
     }
 }
@@ -29,6 +28,16 @@ export const GetTopViewPosts = async () => {
 export const GetPost = async (id) => {
     try {
         const response = await publicAxios.get(`${END_POINT.GetPost}/${id}`);
+        return response;
+    } catch (error) {
+        return await error;
+    }
+}
+
+export const GetPostsByCategory = async (categoryid, paramPost) => {
+    try {
+        const response = await publicAxios.get(`${END_POINT.GetPostsByCategory}/${categoryid}`, paramPost);
+        console.log('test post by category', response);
         return response;
     } catch (error) {
         return await error;

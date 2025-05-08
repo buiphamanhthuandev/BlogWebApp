@@ -11,7 +11,6 @@ export default function SidebarSection() {
     ],
     queryFn: async () => {
       const result = await GetTopViewPosts();
-      console.log("response category top view: ", result);
       return result.data;
     }
   })

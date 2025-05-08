@@ -10,6 +10,11 @@ const Post = sequelize.define("Post", {
     type: DataTypes.STRING,
     allowNull: false
   },
+  slug: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false
+  },
   content: {
     type: DataTypes.TEXT,
     allowNull: false

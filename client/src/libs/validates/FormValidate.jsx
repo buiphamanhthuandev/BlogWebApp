@@ -24,3 +24,9 @@ export const ContactValidate = z.object({
     message: z.string()
         .nonempty({message: "Message is required"})
 });
+
+export const CommentValidate = z.object({
+    post_id: z.string({ required_error: "id không được bỏ trống"}).nonempty({message: "id không được bỏ trống"}),
+    content: z.string({ required_error: "Nội dung không được bỏ trống"})
+        .nonempty({ message: "Nội dung không được bỏ trống"})
+});

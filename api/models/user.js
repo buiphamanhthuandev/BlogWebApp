@@ -29,6 +29,10 @@ const User = sequelize.define('User', {
         type: DataTypes.DATE,
         allowNull: true
     },
+    avatar: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     role: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -50,6 +54,7 @@ const User = sequelize.define('User', {
                     "password",
                     "refresh_token",
                     "verification_token",
+                    "token_expiry"
                 ]
             }
         },

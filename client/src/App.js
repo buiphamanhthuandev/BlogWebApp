@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import {Route, Routes, useLocation, useNavigate} from "react-router";
-import { Router } from "./router/Router";
+import {Route, Routes, useLocation} from "react-router";
+import { RouteLogin, Router, RouteRegister } from "./router/Router";
 import Layout from "./pages/Layout";
 
 const TitleUpdate = () => {
@@ -11,7 +11,11 @@ const TitleUpdate = () => {
       "/" : "Blog-WebApp",
       "/detail": "Blog - Detail",
       "/about": "Blog - About",
-      "/account": "Blog - Account"
+      "/profile": "Blog - Profile",
+      "/contact": "Blog - Contact",
+      "/login": "Blog - Login",
+      "/register": "Blog - Register",
+      "/category": "Blog - Category",
     };
     document.title = titles[location.pathname] || "Blog-WebApp";
   },[location]);
@@ -20,7 +24,9 @@ const TitleUpdate = () => {
 function App() {
   return (
     <div className={"h-screen w-full max-h-screen max-w-full overflow-y-auto"}>
+     <TitleUpdate />
       <Routes>
+        
         <Route element={<Layout />}>
           {
             Router.map((route) => {
@@ -34,6 +40,15 @@ function App() {
             })
           }
         </Route>
+        <Route key={RouteLogin.name}
+          path={RouteLogin.path}
+          element={RouteLogin.element}
+        />
+        <Route key={RouteRegister.name}
+          path={RouteRegister.path}
+          element={RouteRegister.element}
+        />
+
       </Routes>
     </div>
   );

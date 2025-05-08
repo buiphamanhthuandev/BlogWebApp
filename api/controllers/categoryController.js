@@ -32,6 +32,7 @@ exports.getAllCategories = async (req, res) => {
   }
 };
 
+
 exports.getCategory = async (req, res) => {
   const id = parseInt(req.params.id);
   try {

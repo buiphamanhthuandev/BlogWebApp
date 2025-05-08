@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const { use } = require("../routes/userRouter");
 
 require('dotenv').config();
 exports.register = async (req, res) => {
@@ -99,17 +100,27 @@ exports.refreshToken = async (req, res) => {
 
 
 exports.logout = async (req, res) => {
-  const {userid} = req.body;
-  if(userid < 1){
-    return res.status(400).json({
-      message: "Id is required"
-    });
+
+  const refreshToken = req.cookies.refreshToken;
+  if(!refreshToken){
+    return res.sendStatus(204);
   }
+
   try{
-    const user = await User.scope('withAllData').findByPk(userid);
-    if(user){
-      await user.update({ refresh_token : null});
+
+    const user = await User.scope('withAllData').findOne({ where: {refresh_token : refreshToken}});
+    console.log('test data user: ', user)
+    if(!user){
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Strict'
+      });
+      return res.sendStatus(204);
     }
+    
+    await user.update({ refresh_token: null}); 
+
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: false,
