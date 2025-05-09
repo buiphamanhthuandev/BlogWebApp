@@ -6,7 +6,6 @@ const Comment = require("./comment");
 const Like = require("./like");
 const Bookmark = require("./bookmark");
 
-
 User.hasMany(Post, {foreignKey: 'user_id'});
 Post.belongsTo(User, {foreignKey: 'user_id'});
 
@@ -56,5 +55,5 @@ module.exports = {
     PostCategory,
     Like,
     Bookmark,
-    Comment
+    Comment,
 };

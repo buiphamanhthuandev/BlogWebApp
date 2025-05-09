@@ -21,7 +21,7 @@ export const ContactValidate = z.object({
     email: z.string()
         .nonempty({message: "Email is required"})
         .email("Invalid email"),
-    message: z.string()
+    content: z.string()
         .nonempty({message: "Message is required"})
 });
 

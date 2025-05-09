@@ -86,7 +86,7 @@ export default function Home() {
               return(
                 <article className="flex flex-col md:flex-row shadow my-4 w-full max-w-4xl" key={item.id}>
                 <Link to={`/detail/${item.id}`} className="hover:opacity-80  w-full md:w-1/2">
-                  <img src={item.image} className="h-[250px] mx-auto" alt="hình ảnh" />
+                  <img src={item.image} className="h-[250px] w-[370px] mx-auto" alt="hình ảnh" />
                 </Link>
                 <div className="bg-white flex flex-col justify-start p-6 mx-auto  w-full md:w-1/2">
                   <Link to={`/detail/${item.id}`} className="text-blue-700 text-sm font-bold uppercase pb-4">

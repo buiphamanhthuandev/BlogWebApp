@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+
 const userRoutes = require('./routes/userRouter');
 const authRoutes = require('./routes/authRouter');
 const categoryRoutes = require('./routes/categoryRouter');
@@ -10,6 +11,8 @@ const postcategoryRoutes = require('./routes/postcategoryRouter');
 const likepostRoutes = require('./routes/likeRouter');
 const bookmarkRoutes = require('./routes/bookmarkRouter');
 const commentRoutes = require('./routes/commentRouter');
+const contactRoutes = require('./routes/contactRouter');
+
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +35,7 @@ app.use('/api/postcategory', postcategoryRoutes);
 app.use('/api/likepost', likepostRoutes);
 app.use('/api/bookmark', bookmarkRoutes);
 app.use('/api/comment', commentRoutes);
+app.use('/api/contact', contactRoutes)
 app.listen(PORT, ()=> {
     console.log(`Server is running on port http://localhost:${PORT}`);
 });

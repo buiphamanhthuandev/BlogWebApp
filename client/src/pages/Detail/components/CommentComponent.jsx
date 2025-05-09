@@ -34,6 +34,7 @@ export default function CommentComponent(props) {
           title: "Bình luận thành công",
           icon: "success"
         })
+        window.location.reload();
       }
       else if(data?.status === 401){
         await Swal.fire({
@@ -144,7 +145,7 @@ export default function CommentComponent(props) {
             Bình luận
           </label>
           <input 
-            type="test"
+            type="hidden"
             id='post_id'
             name='post_id'
             {...CommentRegister("post_id")}
