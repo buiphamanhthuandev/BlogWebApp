@@ -30,3 +30,8 @@ export const CommentValidate = z.object({
     content: z.string({ required_error: "Nội dung không được bỏ trống"})
         .nonempty({ message: "Nội dung không được bỏ trống"})
 });
+
+export const SubscribeValidate = z.object({
+    email: z.string({ required_error: "Bắt buộc phải có email."}).nonempty({ message: "Bắt buộc phải có email."})
+    .email("Invalid email"),
+});

@@ -12,6 +12,7 @@ const likepostRoutes = require('./routes/likeRouter');
 const bookmarkRoutes = require('./routes/bookmarkRouter');
 const commentRoutes = require('./routes/commentRouter');
 const contactRoutes = require('./routes/contactRouter');
+const subscribeRoutes = require('./routes/subscribeRouter');
 
 const bodyParser = require('body-parser');
 const app = express();
@@ -35,7 +36,9 @@ app.use('/api/postcategory', postcategoryRoutes);
 app.use('/api/likepost', likepostRoutes);
 app.use('/api/bookmark', bookmarkRoutes);
 app.use('/api/comment', commentRoutes);
-app.use('/api/contact', contactRoutes)
+app.use('/api/contact', contactRoutes);
+app.use('/api/subscribe', subscribeRoutes);
+
 app.listen(PORT, ()=> {
     console.log(`Server is running on port http://localhost:${PORT}`);
 });

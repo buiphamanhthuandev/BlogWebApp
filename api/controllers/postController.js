@@ -112,6 +112,10 @@ exports.getPost = async (req, res) => {
       ]
     });
     if (!post) return res.status(404).json({ message: "Post not found" });
+
+    post.view = post.view + 1;
+    await post.save();
+
     res.status(200).json(post);
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error });
